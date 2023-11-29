@@ -1,3 +1,4 @@
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication,QLabel,QWidget,QGridLayout,\
      QLineEdit,QPushButton,QComboBox,QMessageBox,QMainWindow,QTableWidget,QTableWidgetItem,\
       QVBoxLayout,QDialog
@@ -51,7 +52,7 @@ class MainWindow(QMainWindow):
         for row_num, row_data in enumerate(result):
             self.table.insertRow(row_num)
             for column_num,col_data in enumerate(row_data):
-                print(column_num,col_data)
+
                 self.table.setItem(row_num,column_num,QTableWidgetItem(str(col_data)))
 
         connection.close()
@@ -116,8 +117,26 @@ class SearchDialog(QDialog):
         self.student_name.setPlaceholderText("Name")
         layout.addWidget(self.student_name)
 
-        self.setLayout(layout)
+        # Add a submit button
+        button = QPushButton("Search")
+        layout.addWidget(button)
+        button.clicked.connect(self.search)
 
+        self.setLayout(layout)
+    def search(self):
+        name = self.student_name.text()
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        result = cursor.execute("SELECT * FROM students WHERE name=?",(name,))
+        rows= list(result)
+        print(rows)
+        items = mainwindow.table.findItems(name,Qt.MatchFlag.MatchFixedString)
+        for item in items:
+            print(item)
+            mainwindow.table.item(item.row(), 1).setSelected(True)
+
+        cursor.close()
+        connection.close()
 
 
 
